@@ -2,7 +2,7 @@
 from flask import Flask
 from config import Config
 from models import db
-from routes import bp as main_bp
+from routes import api as main_bp
 
 def create_app():
     app = Flask(__name__)
