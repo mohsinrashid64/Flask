@@ -1,46 +1,26 @@
-# app.py
-
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
 from config import Config
+from models import db
+# from routes import api
+# from flask_cors import CORS
 
-app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-
-class Users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-
-
-
-class Man(db.Model):
-    power = db.Column(db.Integer, primary_key=True)
-    gain = db.Column(db.String(80), unique=True, nullable=False)
-    army = db.Column(db.String(120), unique=True, nullable=False)
-
-
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
     
-    if not username or not email:
-        return jsonify({'message': 'Username and email are required'}), 400
+    # Initialize extensions
+    db.init_app(app)
+    # CORS(app)
     
-    existing_user = Users.query.filter((Users.username == username) | (Users.email == email)).first()
-    if existing_user:
-        return jsonify({'message': 'Username or email already exists'}), 400
+    # Register blueprints
+    # app.register_blueprint(api, url_prefix='/api')
     
-    new_user = Users(username=username, email=email)
-    db.session.add(new_user)
-    db.session.commit()
-    
-    return jsonify({'message': 'User registered successfully'}), 201
-
-if __name__ == '__main__':
+    # Create tables if they don't exist
     with app.app_context():
         db.create_all()
+    
+    return app
+
+if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True)
